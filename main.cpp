@@ -35,9 +35,11 @@ int main(int argc, char** argv){
   double var = 0.0f;
   string bigram;
   DNAlist.open(argv[1]);
-  //while(true){
-    if(DNAlist.is_open()){
-      while (getline(DNAlist, line)){
+
+  do {
+    if(DNAlist.is_open()){ //Verifies that a list is being accessed
+      while (getline(DNAlist, line)){ //Iterates through the file, accessing each line one by one
+        //Calculating sum, and determining probability of each nucleotide and bigram
         sum += line.length();
         ++lineCount;
         for(int i = 0; i < line.length(); ++i){
@@ -102,6 +104,7 @@ int main(int argc, char** argv){
         }
       }
       mean = sum/lineCount;
+      //Calculating standard deviation and variance
       while(getline(DNAlist, line)){
         stdDevSum += pow((line.length() - mean),2);
       }
@@ -144,15 +147,52 @@ int main(int argc, char** argv){
     summary << "\t\tGT: " << (GTCount/(sum/2)) << "\n";
     summary << "\t\tGG: " << (GGCount/(sum/2)) << "\n";
 
+//Creating new DNA Strands
     double gaussianD = 0.0f;
     double gaussianC = 0.0f;
-
-    double rand_a = rand() % 2;
-    double rand_b = rand() % 2;
-    gaussianC = sqrt(-2*log(rand_a))*cos(2*3.14159*rand_b);
-    gaussianD = stdDev*gaussianC + mean;
-
-
-//}
+    summary << "DNA Strands:\n";
+    for(int i = 0; i < 1000; ++i){
+      double rand_a = rand() % 2;
+      double rand_b = rand() % 2;
+      gaussianC = sqrt(-2*log(rand_a))*cos(2*3.14159*rand_b);
+      gaussianD = stdDev*gaussianC + mean;
+      string strand;
+      for(int i = 0; i < gaussianD; ++i){
+        double rand_n = (rand() % 2)/4;
+        if(rand_n <= (ACount/sum)){
+          strand += "A";
+        } else if (rand_n <= (CCount/sum)){
+          strand += "C";
+        } else if (rand_n <= (TCount/sum)){
+          strand += "T";
+        } else if (rand_n <= (GCount/sum)){
+          strand += "G";
+        }
+      }
+      summary << strand << "\n";
+      strand = "";
+    }
+    summary.close();
+    //Asking for user input to continue running the program
+    char continueChar;
+    cout << "Would you like to enter another list?(Y/N)" << endl;
+    cin >> continueChar;
+    string newFile;
+    switch (continueChar){
+      case 'Y':
+      case 'y':
+        cout << "Enter the file name of the new list: " << endl;
+        cin >> newFile;
+        DNAlist.open(newFile);
+        break;
+      case 'N':
+      case 'n':
+        cout << "Exiting program";
+        break;
+      default:
+        cout << "Invalid option, exiting program";
+        break;
+    }
+  } while(DNAlist.is_open());
   return 0;
 }
